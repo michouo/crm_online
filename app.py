@@ -32,21 +32,31 @@ def home():
 @app.route("/add", methods=["GET", "POST"])
 def add_client():
     if request.method == "POST":
-        now = datetime.now().strftime("%Y-%m-%d")
+        name = request.form["name"]
+        house_address = request.form["house_address"]
+        register_address = request.form["register_address"]
+        notes = request.form["notes"]
 
-        chosen_next = request.form["next_follow"]
-        if chosen_next.strip() == "":
-            next_time = (datetime.now() + timedelta(days=14)).strftime("%Y-%m-%d")
+        now = datetime.now()
+        
+        # 若使用者沒有選日期 → 自動往後 14 天
+        chosen_next = request.form["next_follow"].strip()
+        if chosen_next == "":
+            next_time = now + timedelta(days=14)
         else:
-            next_time = chosen_next
+            next_time = datetime.strptime(chosen_next, "%Y/%m/%d")
 
+        if house_address.strip() == register_address.strip():
+            register_address = "同左"
+
+        # 建立客戶資料
         c = Client(
-            name=request.form["name"],
-            house_address=request.form["house_address"],
-            register_address=request.form["register_address"],
+            name=name,
+            house_address=house_address,
+            register_address=register_address,
             first_contact=now,
             next_follow=next_time,
-            notes=request.form["notes"]
+            notes=notes
         )
 
         db.session.add(c)
